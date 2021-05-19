@@ -92,7 +92,7 @@ app.all('/api', (req, res)=>{
       rejectUnauthorized: false, // This doesn't work,
       insecure: true,
   };
-
+  console.log('data', data);
   request(options, (err, result, body)=>{
     if(err) console.log(err);
     

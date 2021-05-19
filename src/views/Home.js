@@ -6,31 +6,39 @@ const $ = window.$;
 const Home = ({history}) => {
     const[dept, setDept ] = useState([])
     const[state, setState] = useState({
-        Code: '',
-        Name: '',
-        Description: ''
+        CardCode: '',
+        CardName: '',
+        CardType: 'c'
     })
     const[isupdate, setIsUpdate] = useState(false);
 
     useEffect(()=>{
         axios.post(process.env.REACT_APP_SERVE+'/api',{
-            url: 'Departments',
+            url: `BusinessPartners?$select=CardCode,CardName,CardType&$filter=startswith(CardCode, 'C') &$orderby=CardCode&$top=10&$skip=1`,
             method: 'GET',
         })
         .then(res=>{
-            setDept(res.data.value);
+            if(res.data.hasOwnProperty('error'))
+            {
+                Auth.logout(()=>{
+                    history.push('/')
+                });
+            }else{
+                setDept(res.data.value);
+            }
+            
         })
         .catch(er=>console.log(er));
 
         $("#myModal").on('hide.bs.modal', ()=>{
             setIsUpdate(false);
             setState({
-                Code: '',
-                Name: '',
-                Description: ''
+                CardCode: '',
+                CardName: '',
+                CardType: ''
             });
         });
-    },[]);
+    },[history]);
 
     const logout = () =>{
         Auth.logout(()=>{
@@ -40,12 +48,12 @@ const Home = ({history}) => {
 
     const create = () =>{
         axios.post(process.env.REACT_APP_SERVE+'/api',{
-            url: 'Departments',
+            url: 'BusinessPartners',
             method: 'POST',
             data: state
         })
         .then(res=>{
-            setDept(res.data.value);
+            // setDept([...dept, res.data.value]);
         })
         .catch(er=>console.log(er));
     }
@@ -57,23 +65,23 @@ const Home = ({history}) => {
     const update = (data= '') =>{
         
         axios.post(process.env.REACT_APP_SERVE+'/api',{
-            url: 'Departments/'+state.Code,
+            url: `BusinessPartners('${state.CardCode}')`,
             method: 'PATCH',
-            data: state
+            data: {CardName: state.CardName}
         })
         .then(res=>{
-            setDept(res.data.value);
+            // setDept(res.data.value);
         })
         .catch(er=>console.log(er));
     }
 
     const del = () =>{
         axios.post(process.env.REACT_APP_SERVE+'/api',{
-            url: 'Departments/'+state.Code,
+            url: `BusinessPartners('${state.CardCode}')`,
             method: 'DELETE',
         })
         .then(res=>{
-            setDept(res.data.value);
+            // setDept(res.data.value);
         })
         .catch(er=>console.log(er));
     }
@@ -101,17 +109,17 @@ const Home = ({history}) => {
                         <table className="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>CODE</th>
-                                    <th>NAME</th>
-                                    <th>DESCRIPTION</th>
+                                    <th>CARD CODE</th>
+                                    <th>CARD NAME</th>
+                                    <th>CARD TYPE</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {dept.map((data, key)=>(
                                     <tr key={key} onClick={()=>setUpdate(data)}> 
-                                        <td>{data.Code}</td>
-                                        <td>{data.Name}</td>
-                                        <td>{data.Description}</td>
+                                        <td>{data.CardCode}</td>
+                                        <td>{data.CardName}</td>
+                                        <td>{data.CardType}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -132,13 +140,13 @@ const Home = ({history}) => {
             <div className="modal-body">
                     
                         <div className="form-group mb-3">
-                            <input onChange={handleChange} name="Code" value={state.Code} type="text" placeholder="Code" required="" className="form-control " />
+                            <input onChange={handleChange} placeholder="Card Code" value={state.CardCode} type="text" name="CardCode" required="" className="form-control " />
                         </div>
                         <div className="form-group mb-3">
-                            <input onChange={handleChange} name="Name" value={state.Name} type="text" placeholder="Name" required="" className="form-control" />
+                            <input onChange={handleChange} placeholder="Card Name" value={state.CardName} type="text" name="CardName" required="" className="form-control" />
                         </div>
                         <div className="form-group mb-3">
-                            <input onChange={handleChange} name="Description" value={state.Description} type="text" placeholder="Description" required="" className="form-control" />
+                            <input placeholder="Card Type" defaultValue={state.CardType} readOnly type="text" name="CardType" required="" className="form-control" />
                         </div>
                         {/* <button type="submit" onClick={create} className="btn btn-primary btn-block text-uppercase mb-2 shadow-sm">Sign in</button> */}
                         {/* <!-- <div className="text-center d-flex justify-content-between mt-4"><p>Snippet by <a href="https://bootstrapious.com/snippets" className="font-italic text-muted"> 
